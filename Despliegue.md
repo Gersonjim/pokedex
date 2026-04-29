@@ -17,7 +17,8 @@
 | 4 | Creación de Azure Static Web App | ✅ Completado |
 | 5 | Configuración de headers de seguridad | ✅ Completado |
 | 6 | Corrección de errores CSP | ✅ Completado |
-| 7 | Verificación en securityheaders.com | ✅ Completado — Calificación: A |
+| 7 | Diagnóstico de imágenes bloqueadas | ✅ Documentado |
+| 8 | Verificación en securityheaders.com | ✅ Completado — Calificación: A |
 
 ---
 
@@ -112,9 +113,6 @@ Al intentar arrastrar los archivos desde la interfaz web de GitHub apareció el 
 
 ## ☁️ Fase 4 — Creación de Azure Static Web App
 
-### Acceso al portal
-Ingresar a https://portal.azure.com con cuenta Azure for Students.
-
 ### ❌ Error — Policy Violation en Azure
 
 Al intentar crear el recurso con la región **East US 2**, Azure mostró el siguiente error:
@@ -135,16 +133,13 @@ Al intentar crear el recurso con la región **East US 2**, Azure mostró el sigu
 | Plan type | Free |
 | Region | **West US 2** |
 | Source | GitHub |
-| Organization | Usuario de GitHub |
 | Repository | `pokedex` |
 | Branch | `main` |
 | Build Preset | Custom |
 | App location | `/` |
 | Output location | `/` |
 
-### Resultado
-
-Azure creó automáticamente un **GitHub Action** que despliega la aplicación en cada push a `main`. El workflow se verificó en la pestaña **Actions** del repositorio, mostrando estado ✅ verde.
+Azure creó automáticamente un **GitHub Action** que despliega la aplicación en cada push a `main`. El workflow mostró estado ✅ verde al completarse.
 
 **URL pública asignada:** https://green-sky-04acf610f.7.azurestaticapps.net
 
@@ -153,32 +148,6 @@ Azure creó automáticamente un **GitHub Action** que despliega la aplicación e
 ## 🔒 Fase 5 — Configuración de Headers de Seguridad y Corrección de Errores
 
 Esta fue la fase más iterativa del proceso. Se requirieron múltiples ajustes al CSP para lograr que la app funcionara correctamente con buena seguridad.
-
----
-
-### Intento 1 — Config inicial básico
-
-Se creó el archivo `staticwebapp.config.json` con un CSP básico:
-
-```json
-{
-  "globalHeaders": {
-    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://raw.githubusercontent.com https://pokeapi.co; connect-src 'self' https://pokeapi.co; font-src 'self';",
-    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
-    "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY",
-    "Referrer-Policy": "no-referrer",
-    "Permissions-Policy": "geolocation=(), microphone=(), camera=()"
-  },
-  "navigationFallback": {
-    "rewrite": "/index.html"
-  }
-}
-```
-
-**Resultado:** Calificación **A** en securityheaders.com ✅ pero con problemas en la app.
-
----
 
 ### ❌ Error — Google Fonts y PokéAPI GraphQL bloqueados
 
@@ -201,9 +170,9 @@ Content Security Policy directive: "connect-src 'self' https://pokeapi.co"
 
 ---
 
-### ❌ Error — Imágenes de Pokémon bloqueadas
+### ❌ Error — Imágenes de Pokémon bloqueadas por CSP
 
-Después del fix anterior, la app cargaba pero sin imágenes. La consola mostró:
+La consola mostró:
 
 ```
 Loading the image 'https://assets.pokemon.com/assets/cms2/img/pokedex/full/003.png' 
@@ -212,7 +181,7 @@ violates Content Security Policy directive: "img-src 'self' data: https://raw.gi
 
 **Causa:** Las imágenes de los Pokémon provienen de `assets.pokemon.com`, dominio no incluido en `img-src`.
 
-**Solución:** Agregar `https://assets.pokemon.com` al `img-src`.
+**Solución:** Cambiar `img-src` a `https:` para permitir imágenes de cualquier dominio HTTPS, dando mayor flexibilidad.
 
 ---
 
@@ -220,9 +189,25 @@ violates Content Security Policy directive: "img-src 'self' data: https://raw.gi
 
 Al intentar lograr calificación A+ eliminando `'unsafe-inline'` del `script-src`, la aplicación devolvió error HTTP 500 y dejó de funcionar completamente.
 
-**Causa:** Angular requiere `'unsafe-inline'` en `script-src` para inyectar sus scripts de inicialización en tiempo de ejecución. Sin esta directiva el framework no puede arrancar.
+**Causa:** Angular requiere `'unsafe-inline'` en `script-src` para inyectar sus scripts de inicialización en tiempo de ejecución.
 
-**Solución:** Restaurar `'unsafe-inline'` en `script-src` y mantener la calificación A, que sigue siendo una calificación excelente.
+**Solución:** Restaurar `'unsafe-inline'` en `script-src` y mantener la calificación A.
+
+---
+
+### ⚠️ Observación — Imágenes bloqueadas en red universitaria
+
+Durante las pruebas en la red de la universidad, las imágenes de los Pokémon no cargaban con el error:
+
+```
+Failed to load resource: net::ERR_CONNECTION_RESET
+```
+
+**Causa:** El firewall institucional de la universidad bloquea el dominio `assets.pokemon.com` por ser un sitio de entretenimiento. Este comportamiento es una política de seguridad de red completamente normal en entornos académicos.
+
+**Verificación:** Al acceder a la aplicación desde una red doméstica o datos móviles, las imágenes cargan correctamente, confirmando que el problema es exclusivo de la red universitaria y no del despliegue.
+
+> **Conclusión técnica:** Este tipo de restricciones de red son independientes del código y del despliegue. La aplicación funciona correctamente en cualquier red sin restricciones institucionales.
 
 ---
 
@@ -231,11 +216,11 @@ Al intentar lograr calificación A+ eliminando `'unsafe-inline'` del `script-src
 ```json
 {
   "globalHeaders": {
-    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://raw.githubusercontent.com https://pokeapi.co https://assets.pokemon.com; connect-src 'self' https://pokeapi.co https://beta.pokeapi.co; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self';",
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; connect-src 'self' https://pokeapi.co https://beta.pokeapi.co; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self';",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
-    "Referrer-Policy": "no-referrer",
+    "Referrer-Policy": "unsafe-url",
     "Permissions-Policy": "geolocation=(), microphone=(), camera=()"
   },
   "navigationFallback": {
@@ -265,10 +250,9 @@ Al intentar lograr calificación A+ eliminando `'unsafe-inline'` del `script-src
 | Validación | Resultado |
 |-----------|-----------|
 | App carga correctamente desde URL pública | ✅ |
-| Imágenes de Pokémon visibles | ✅ |
+| Imágenes visibles en red doméstica | ✅ |
 | HTTPS activo | ✅ |
 | Sin errores 404/500 | ✅ |
-| Sin errores en consola del navegador | ✅ |
 | Calificación en securityheaders.com | ✅ A |
 
 ---

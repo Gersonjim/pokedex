@@ -8,6 +8,7 @@
     "Permissions-Policy": "geolocation=(), microphone=(), camera=()"
   },
   "navigationFallback": {
-    "rewrite": "/index.html"
+    "rewrite": "/index.html",
+    "exclude": ["/assets/*", "/pokedex-angular/*", "*.png", "*.gif", "*.jpg", "*.svg", "*.ico"]
   }
 }

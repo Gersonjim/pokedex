@@ -1,13 +1,25 @@
 {
-  "globalHeaders": {
-    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; connect-src 'self' https://pokeapi.co https://beta.pokeapi.co; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self';",
-    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
-    "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY",
-    "Referrer-Policy": "unsafe-url",
-    "Permissions-Policy": "geolocation=(), microphone=(), camera=()"
-  },
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": ["/assets/*", "/pokedex-angular/*", "*.png", "*.gif", "*.jpg", "*.svg", "*.ico"]
-  }
+
+  "globalHeaders": {
+
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; connect-src 'self' https://pokeapi.co https://beta.pokeapi.co; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self';",
+
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+
+    "X-Content-Type-Options": "nosniff",
+
+    "X-Frame-Options": "DENY",
+
+    "Referrer-Policy": "unsafe-url",
+
+    "Permissions-Policy": "geolocation=(), microphone=(), camera=()"
+
+  },
+
+  "navigationFallback": {
+
+    "rewrite": "/index.html",
+
+    "exclude": ["/assets/*", "/pokedex-angular/*", "*.png", "*.gif", "*.jpg", "*.svg", "*.ico"]
+
+  }

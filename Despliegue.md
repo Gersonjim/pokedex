@@ -1,7 +1,7 @@
 # 🚀 Despliegue.md — Proceso de Despliegue en Azure Static Web Apps
 
 **Autor:** Gerson Jimenez Arroyo  
-**Fecha:** Abril 2026  
+**Fecha:** Mayo 2026  
 **Plataforma:** Microsoft Azure Static Web Apps  
 **URL desplegada:** https://green-sky-04acf610f.7.azurestaticapps.net
 
@@ -16,202 +16,126 @@
 | 3 | Subida del código compilado | ✅ Completado |
 | 4 | Creación de Azure Static Web App | ✅ Completado |
 | 5 | Configuración de headers de seguridad | ✅ Completado |
-| 6 | Corrección de errores CSP | ✅ Completado |
-| 7 | Diagnóstico de imágenes bloqueadas | ✅ Documentado |
+| 6 | Corrección de recursos bloqueados por CSP | ✅ Completado |
+| 7 | Corrección de sprites bloqueados por navigationFallback | ✅ Completado |
 | 8 | Verificación en securityheaders.com | ✅ Completado — Calificación: A |
 
 ---
 
 ## ⚙️ Fase 1 — Compilación del Proyecto Angular
 
-### Requisitos previos instalados
-- Node.js v16+
-- npm
-
-### Comandos ejecutados
-
-**1. Navegar a la carpeta del proyecto:**
+**1. Inicializar Git y navegar a la carpeta:**
 ```bash
-cd C:\Escritorio\pokedex\pokedex-angular
-```
-
-**2. Instalar dependencias:**
-```bash
+cd "C:\Users\GERSON JIMENEZ\Downloads\pokedex-angular"
+git init
 npm install
-```
-
-**Resultado:**
-```
-added 1224 packages, and audited 1225 packages in 38s
-170 packages are looking for funding
-```
-
-> ⚠️ **Advertencias recibidas (no son errores):**
-> - `npm warn deprecated source-map-resolve@0.6.0` — paquete deprecado, no afecta la funcionalidad
-> - `fatal: not a git repository` — error de husky al no encontrar repositorio Git, no afecta el build
-> - `97 vulnerabilities` — vulnerabilidades en dependencias de desarrollo, no afectan producción
-
-**3. Compilar para producción:**
-```bash
 npm run build
 ```
 
-**Resultado:** Se generó exitosamente la carpeta:
+**Resultado:** Carpeta generada exitosamente:
 ```
-C:\Escritorio\pokedex\pokedex-angular\dist\pokedex-angular\
+dist\pokedex-angular\
 ```
 
 ---
 
 ## 📁 Fase 2 — Creación del Repositorio en GitHub
 
-1. Ingresar a https://github.com y crear nuevo repositorio
-2. Configuración usada:
-   - **Nombre:** `pokedex`
-   - **Visibilidad:** Public
-   - **Initialize with README:** ✅ Sí
-   - **.gitignore:** None
-   - **License:** None
-3. Repositorio creado exitosamente
+| Campo | Valor |
+|-------|-------|
+| Nombre | `pokedex` |
+| Visibilidad | Public |
+| Initialize with README | ✅ Sí |
 
 ---
 
 ## 📤 Fase 3 — Subida del Código a GitHub
 
 ### ❌ Error — Límite de archivos en GitHub Web
-
-Al intentar arrastrar los archivos desde la interfaz web de GitHub apareció el siguiente error:
-
 > *"Yowza, that's a lot of files. Try uploading fewer than 100 at a time."*
 
-**Causa:** La carpeta `dist/pokedex-angular/` contenía más de 100 archivos, superando el límite de la interfaz web.
+**Solución:** Usar GitHub Desktop para subir sin límite.
 
-**Solución:** Usar **GitHub Desktop** para subir todos los archivos sin restricción de cantidad.
-
-### Pasos con GitHub Desktop
-
-**1. Instalar GitHub Desktop** desde https://desktop.github.com
-
-**2. Clonar el repositorio:**
-- File → Clone a repository
-- Seleccionar `pokedex`
-- Local path: `C:\Escritorio\pokedex-repo\`
-
-**3. Copiar archivos compilados:**
-- Origen: `C:\Escritorio\pokedex\pokedex-angular\dist\pokedex-angular\`
-- Destino: `C:\Escritorio\pokedex-repo\`
-- Seleccionar todo `CTRL+A` → Copiar `CTRL+C` → Pegar `CTRL+V`
-
-**4. Hacer commit y push:**
-- Summary: `Add compiled PokeDex Angular app`
-- Clic en **"Commit to main"**
-- Clic en **"Push origin"**
-
-✅ Archivos subidos correctamente al repositorio.
+1. Clonar repo → Local path: `C:\Escritorio\pokedex-repo\`
+2. Copiar contenido de `dist\pokedex-angular\` al repo
+3. Commit: `Add compiled PokeDex Angular app` → Push
 
 ---
 
 ## ☁️ Fase 4 — Creación de Azure Static Web App
 
 ### ❌ Error — Policy Violation en Azure
+> *"The template deployment failed because of policy violation."*
 
-Al intentar crear el recurso con la región **East US 2**, Azure mostró el siguiente error:
+**Causa:** Región `East US 2` bloqueada por políticas estudiantiles.  
+**Solución:** Cambiar región a `West US 2`.
 
-> *"The template deployment failed because of policy violation. Please see details for more information."*
-
-**Causa:** La suscripción Azure for Students tiene restricciones de política que bloquean ciertas regiones geográficas.
-
-**Solución:** Cambiar la región de `East US 2` a **`West US 2`**. El recurso se creó exitosamente.
-
-### Configuración final del recurso
-
-| Campo | Valor usado |
-|-------|------------|
-| Subscription | Azure for Students |
-| Resource Group | `rg-pokedex` (nuevo) |
+| Campo | Valor |
+|-------|-------|
+| Resource Group | `rg-pokedex` |
 | Name | `pokedex-app` |
-| Plan type | Free |
-| Region | **West US 2** |
-| Source | GitHub |
+| Plan | Free |
+| Region | West US 2 |
 | Repository | `pokedex` |
 | Branch | `main` |
-| Build Preset | Custom |
 | App location | `/` |
 | Output location | `/` |
 
-Azure creó automáticamente un **GitHub Action** que despliega la aplicación en cada push a `main`. El workflow mostró estado ✅ verde al completarse.
-
-**URL pública asignada:** https://green-sky-04acf610f.7.azurestaticapps.net
+**URL asignada:** https://green-sky-04acf610f.7.azurestaticapps.net
 
 ---
 
-## 🔒 Fase 5 — Configuración de Headers de Seguridad y Corrección de Errores
-
-Esta fue la fase más iterativa del proceso. Se requirieron múltiples ajustes al CSP para lograr que la app funcionara correctamente con buena seguridad.
+## 🔒 Fase 5 — Configuración de Headers y Corrección de Errores
 
 ### ❌ Error — Google Fonts y PokéAPI GraphQL bloqueados
+**Causa:** CSP no incluía dominios externos de la app.  
+**Solución:** Agregar `fonts.googleapis.com`, `fonts.gstatic.com` y `beta.pokeapi.co`.
 
-La consola del navegador (F12) mostró estos errores:
-
-```
-Loading the stylesheet 'https://fonts.googleapis.com/css2?family=Roboto&display=swap' 
-violates Content Security Policy directive: "style-src 'self' 'unsafe-inline'"
-
-Connecting to 'https://beta.pokeapi.co/graphql/v1beta' violates 
-Content Security Policy directive: "connect-src 'self' https://pokeapi.co"
-```
-
-**Causa:** El CSP no incluía los dominios de Google Fonts ni de la API GraphQL de PokéAPI.
-
-**Solución:** Agregar los dominios faltantes al CSP:
-- `https://fonts.googleapis.com` → en `style-src`
-- `https://fonts.gstatic.com` → en `font-src`
-- `https://beta.pokeapi.co` → en `connect-src`
-
----
-
-### ❌ Error — Imágenes de Pokémon bloqueadas por CSP
-
-La consola mostró:
-
-```
-Loading the image 'https://assets.pokemon.com/assets/cms2/img/pokedex/full/003.png' 
-violates Content Security Policy directive: "img-src 'self' data: https://raw.githubusercontent.com https://pokeapi.co"
-```
-
-**Causa:** Las imágenes de los Pokémon provienen de `assets.pokemon.com`, dominio no incluido en `img-src`.
-
-**Solución:** Cambiar `img-src` a `https:` para permitir imágenes de cualquier dominio HTTPS, dando mayor flexibilidad.
-
----
+### ❌ Error — Imágenes de Pokémon grandes bloqueadas
+**Causa:** `assets.pokemon.com` no estaba en `img-src`.  
+**Solución:** Cambiar `img-src` a `https:` para permitir cualquier dominio HTTPS.
 
 ### ❌ Error — HTTP 500 al intentar A+
+**Causa:** Angular requiere `unsafe-inline` en `script-src`.  
+**Solución:** Restaurar `unsafe-inline` y mantener calificación A.
 
-Al intentar lograr calificación A+ eliminando `'unsafe-inline'` del `script-src`, la aplicación devolvió error HTTP 500 y dejó de funcionar completamente.
+### ❌ Error — Sprites de tarjetas no cargaban (404)
+Este fue el error más complejo del proceso. Los sprites pequeños de las tarjetas de Pokémon daban error 404 aunque los archivos existían en el repositorio.
 
-**Causa:** Angular requiere `'unsafe-inline'` en `script-src` para inyectar sus scripts de inicialización en tiempo de ejecución.
+**Causa:** El `navigationFallback` de Azure redirigía **todas** las peticiones a `index.html`, incluyendo las peticiones de imágenes. Cuando la app pedía:
+```
+/pokedex-angular/assets/images/pokemon-green.png
+```
+Azure respondía con `index.html` en lugar de la imagen.
 
-**Solución:** Restaurar `'unsafe-inline'` en `script-src` y mantener la calificación A.
+**Solución:** Agregar el campo `exclude` en `navigationFallback` para excluir archivos estáticos:
+```json
+"navigationFallback": {
+  "rewrite": "/index.html",
+  "exclude": [
+    "/pokedex-angular/*",
+    "/assets/*",
+    "/*.png",
+    "/*.gif",
+    "/*.jpg",
+    "/*.svg",
+    "/*.ico",
+    "/*.woff",
+    "/*.woff2",
+    "/*.js",
+    "/*.css",
+    "/*.txt"
+  ]
+}
+```
+
+### ❌ Error — Carpeta pokedex-angular/assets/images/ faltante
+**Causa:** Los sprites se buscaban en `/pokedex-angular/assets/images/` pero solo existía `/assets/images/`.  
+**Solución:** Crear la carpeta `pokedex-angular\assets\images\` en el repo y copiar todos los archivos de imágenes.
 
 ---
 
-### ⚠️ Observación — Imágenes bloqueadas en red universitaria
-
-Durante las pruebas en la red de la universidad, las imágenes de los Pokémon no cargaban con el error:
-
-```
-Failed to load resource: net::ERR_CONNECTION_RESET
-```
-
-**Causa:** El firewall institucional de la universidad bloquea el dominio `assets.pokemon.com` por ser un sitio de entretenimiento. Este comportamiento es una política de seguridad de red completamente normal en entornos académicos.
-
-**Verificación:** Al acceder a la aplicación desde una red doméstica o datos móviles, las imágenes cargan correctamente, confirmando que el problema es exclusivo de la red universitaria y no del despliegue.
-
-> **Conclusión técnica:** Este tipo de restricciones de red son independientes del código y del despliegue. La aplicación funciona correctamente en cualquier red sin restricciones institucionales.
-
----
-
-### ✅ Configuración final funcionando
+## ✅ Configuración Final — staticwebapp.config.json
 
 ```json
 {
@@ -224,7 +148,21 @@ Failed to load resource: net::ERR_CONNECTION_RESET
     "Permissions-Policy": "geolocation=(), microphone=(), camera=()"
   },
   "navigationFallback": {
-    "rewrite": "/index.html"
+    "rewrite": "/index.html",
+    "exclude": [
+      "/pokedex-angular/*",
+      "/assets/*",
+      "/*.png",
+      "/*.gif",
+      "/*.jpg",
+      "/*.svg",
+      "/*.ico",
+      "/*.woff",
+      "/*.woff2",
+      "/*.js",
+      "/*.css",
+      "/*.txt"
+    ]
   }
 }
 ```
@@ -233,27 +171,14 @@ Failed to load resource: net::ERR_CONNECTION_RESET
 
 ## ✅ Fase 6 — Verificación Final
 
-### Prueba en securityheaders.com
-
-- **URL escaneada:** https://green-sky-04acf610f.7.azurestaticapps.net
-- **Calificación obtenida:** 🟢 **A**
-- **Headers verificados:**
-  - ✅ Content-Security-Policy
-  - ✅ Strict-Transport-Security
-  - ✅ X-Content-Type-Options
-  - ✅ X-Frame-Options
-  - ✅ Referrer-Policy
-  - ✅ Permissions-Policy
-
-### Validaciones finales
-
-| Validación | Resultado |
-|-----------|-----------|
-| App carga correctamente desde URL pública | ✅ |
-| Imágenes visibles en red doméstica | ✅ |
+| Verificación | Resultado |
+|-------------|-----------|
+| App carga correctamente | ✅ |
+| Sprites de Pokémon visibles | ✅ |
+| Imágenes grandes de detalle visibles | ✅ |
 | HTTPS activo | ✅ |
 | Sin errores 404/500 | ✅ |
-| Calificación en securityheaders.com | ✅ A |
+| Calificación securityheaders.com | ✅ A |
 
 ---
 
@@ -262,8 +187,8 @@ Failed to load resource: net::ERR_CONNECTION_RESET
 | Herramienta | Uso |
 |------------|-----|
 | Node.js + npm | Compilación del proyecto Angular |
-| GitHub Desktop | Subida masiva de archivos al repositorio |
-| Azure Portal | Creación y configuración del Static Web App |
+| GitHub Desktop | Subida masiva de archivos |
+| Azure Portal | Creación del Static Web App |
 | GitHub Actions | CI/CD automatizado |
-| Chrome DevTools (F12) | Diagnóstico de errores CSP en consola |
+| Chrome DevTools (F12) | Diagnóstico de errores CSP |
 | securityheaders.com | Verificación de headers de seguridad |

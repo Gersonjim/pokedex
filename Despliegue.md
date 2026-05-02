@@ -17,14 +17,13 @@
 | 4 | Creación de Azure Static Web App | ✅ Completado |
 | 5 | Configuración de headers de seguridad | ✅ Completado |
 | 6 | Corrección de recursos bloqueados por CSP | ✅ Completado |
-| 7 | Corrección de sprites bloqueados por navigationFallback | ✅ Completado |
+| 7 | Corrección de sprites por navigationFallback | ✅ Completado |
 | 8 | Verificación en securityheaders.com | ✅ Completado — Calificación: A |
 
 ---
 
 ## ⚙️ Fase 1 — Compilación del Proyecto Angular
 
-**1. Inicializar Git y navegar a la carpeta:**
 ```bash
 cd "C:\Users\GERSON JIMENEZ\Downloads\pokedex-angular"
 git init
@@ -32,10 +31,7 @@ npm install
 npm run build
 ```
 
-**Resultado:** Carpeta generada exitosamente:
-```
-dist\pokedex-angular\
-```
+**Resultado:** Carpeta `dist\pokedex-angular\` generada exitosamente.
 
 ---
 
@@ -52,8 +48,6 @@ dist\pokedex-angular\
 ## 📤 Fase 3 — Subida del Código a GitHub
 
 ### ❌ Error — Límite de archivos en GitHub Web
-> *"Yowza, that's a lot of files. Try uploading fewer than 100 at a time."*
-
 **Solución:** Usar GitHub Desktop para subir sin límite.
 
 1. Clonar repo → Local path: `C:\Escritorio\pokedex-repo\`
@@ -65,10 +59,8 @@ dist\pokedex-angular\
 ## ☁️ Fase 4 — Creación de Azure Static Web App
 
 ### ❌ Error — Policy Violation en Azure
-> *"The template deployment failed because of policy violation."*
-
-**Causa:** Región `East US 2` bloqueada por políticas estudiantiles.  
-**Solución:** Cambiar región a `West US 2`.
+**Causa:** Región `East US 2` bloqueada.  
+**Solución:** Cambiar a `West US 2`.
 
 | Campo | Valor |
 |-------|-------|
@@ -81,57 +73,24 @@ dist\pokedex-angular\
 | App location | `/` |
 | Output location | `/` |
 
-**URL asignada:** https://green-sky-04acf610f.7.azurestaticapps.net
-
 ---
 
 ## 🔒 Fase 5 — Configuración de Headers y Corrección de Errores
 
 ### ❌ Error — Google Fonts y PokéAPI GraphQL bloqueados
-**Causa:** CSP no incluía dominios externos de la app.  
-**Solución:** Agregar `fonts.googleapis.com`, `fonts.gstatic.com` y `beta.pokeapi.co`.
-
-### ❌ Error — Imágenes de Pokémon grandes bloqueadas
-**Causa:** `assets.pokemon.com` no estaba en `img-src`.  
-**Solución:** Cambiar `img-src` a `https:` para permitir cualquier dominio HTTPS.
+**Solución:** Agregar `fonts.googleapis.com`, `fonts.gstatic.com` y `beta.pokeapi.co` al CSP.
 
 ### ❌ Error — HTTP 500 al intentar A+
 **Causa:** Angular requiere `unsafe-inline` en `script-src`.  
 **Solución:** Restaurar `unsafe-inline` y mantener calificación A.
 
 ### ❌ Error — Sprites de tarjetas no cargaban (404)
-Este fue el error más complejo del proceso. Los sprites pequeños de las tarjetas de Pokémon daban error 404 aunque los archivos existían en el repositorio.
-
-**Causa:** El `navigationFallback` de Azure redirigía **todas** las peticiones a `index.html`, incluyendo las peticiones de imágenes. Cuando la app pedía:
-```
-/pokedex-angular/assets/images/pokemon-green.png
-```
-Azure respondía con `index.html` en lugar de la imagen.
-
-**Solución:** Agregar el campo `exclude` en `navigationFallback` para excluir archivos estáticos:
-```json
-"navigationFallback": {
-  "rewrite": "/index.html",
-  "exclude": [
-    "/pokedex-angular/*",
-    "/assets/*",
-    "/*.png",
-    "/*.gif",
-    "/*.jpg",
-    "/*.svg",
-    "/*.ico",
-    "/*.woff",
-    "/*.woff2",
-    "/*.js",
-    "/*.css",
-    "/*.txt"
-  ]
-}
-```
+**Causa:** El `navigationFallback` redirigía todas las peticiones incluyendo imágenes a `index.html`.  
+**Solución:** Agregar `exclude` en `navigationFallback` para excluir archivos estáticos.
 
 ### ❌ Error — Carpeta pokedex-angular/assets/images/ faltante
 **Causa:** Los sprites se buscaban en `/pokedex-angular/assets/images/` pero solo existía `/assets/images/`.  
-**Solución:** Crear la carpeta `pokedex-angular\assets\images\` en el repo y copiar todos los archivos de imágenes.
+**Solución:** Crear la carpeta `pokedex-angular\assets\images\` y copiar todos los archivos de imágenes.
 
 ---
 
@@ -144,7 +103,7 @@ Azure respondía con `index.html` en lugar de la imagen.
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
-    "Referrer-Policy": "unsafe-url",
+    "Referrer-Policy": "no-referrer",
     "Permissions-Policy": "geolocation=(), microphone=(), camera=()"
   },
   "navigationFallback": {
@@ -175,7 +134,7 @@ Azure respondía con `index.html` en lugar de la imagen.
 |-------------|-----------|
 | App carga correctamente | ✅ |
 | Sprites de Pokémon visibles | ✅ |
-| Imágenes grandes de detalle visibles | ✅ |
+| Imágenes grandes de detalle | ✅ |
 | HTTPS activo | ✅ |
 | Sin errores 404/500 | ✅ |
 | Calificación securityheaders.com | ✅ A |
@@ -192,3 +151,4 @@ Azure respondía con `index.html` en lugar de la imagen.
 | GitHub Actions | CI/CD automatizado |
 | Chrome DevTools (F12) | Diagnóstico de errores CSP |
 | securityheaders.com | Verificación de headers de seguridad |
+

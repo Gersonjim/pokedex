@@ -62,7 +62,7 @@ La aplicación implementa los siguientes encabezados HTTP de seguridad, configur
 | `Strict-Transport-Security` | Obliga el uso de HTTPS en todas las conexiones |
 | `X-Content-Type-Options` | Evita la detección automática de tipos MIME |
 | `X-Frame-Options` | Impide que la app sea embebida en iframes externos |
-| `Referrer-Policy` | Necesario para cargar imágenes de assets.pokemon.com |
+| `Referrer-Policy` | Minimiza la fuga de información en cabeceras HTTP |
 | `Permissions-Policy` | Restringe acceso a APIs del navegador |
 
 ### Configuración final (`staticwebapp.config.json`)
@@ -74,7 +74,7 @@ La aplicación implementa los siguientes encabezados HTTP de seguridad, configur
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
-    "Referrer-Policy": "unsafe-url",
+    "Referrer-Policy": "no-referrer",
     "Permissions-Policy": "geolocation=(), microphone=(), camera=()"
   },
   "navigationFallback": {
@@ -99,10 +99,7 @@ La aplicación implementa los siguientes encabezados HTTP de seguridad, configur
 
 **Resultado del escaneo en securityheaders.com: 🟢 A**
 
-> **Nota técnica sobre los warnings:**
-> - `unsafe-inline` en `script-src`: Angular lo requiere obligatoriamente para sus scripts de inicialización. Sin esta directiva la app devuelve error HTTP 500.
-> - `unsafe-url` en `Referrer-Policy`: Necesario para que las imágenes de `assets.pokemon.com` carguen correctamente. Sin este valor las imágenes son bloqueadas.
-> Ambos son compromisos técnicos necesarios para el correcto funcionamiento de la aplicación.
+> **Nota técnica:** La calificación A+ requeriría eliminar `unsafe-inline` del `script-src`. Sin embargo, Angular inyecta scripts inline en tiempo de ejecución, lo que hace técnicamente inviable quitar esta directiva sin modificar el código fuente del framework.
 
 ---
 
@@ -114,14 +111,12 @@ La aplicación implementa los siguientes encabezados HTTP de seguridad, configur
 - **Strict-Transport-Security** elimina el riesgo de ataques Man-in-the-Middle (MITM) forzando siempre HTTPS.
 - **X-Frame-Options: DENY** previene ataques de Clickjacking donde sitios maliciosos embeben la app en iframes invisibles.
 - **X-Content-Type-Options: nosniff** evita que el navegador interprete archivos con tipos MIME incorrectos.
-- **Referrer-Policy** controla qué información de origen se comparte al navegar hacia otros sitios.
+- **Referrer-Policy: no-referrer** protege la privacidad del usuario evitando que la URL de origen se filtre al navegar hacia otros sitios.
 - **Permissions-Policy** restringe el acceso a APIs sensibles del navegador como cámara, micrófono y geolocalización.
 
 ### ¿Qué aprendí sobre la relación entre despliegue y seguridad web?
 
 El despliegue no termina cuando la aplicación está en línea. Durante este proceso aprendí que la seguridad y la funcionalidad deben balancearse cuidadosamente. Uno de los aprendizajes más importantes fue entender cómo el `navigationFallback` de Azure Static Web Apps puede interferir con la carga de archivos estáticos si no se configura correctamente el campo `exclude`.
-
-También aprendí que el Content-Security-Policy es el encabezado más complejo de configurar, ya que requiere conocer exactamente todos los recursos externos que usa la aplicación.
 
 ### ¿Qué desafíos encontré en el proceso?
 
@@ -129,19 +124,19 @@ También aprendí que el Content-Security-Policy es el encabezado más complejo 
 Al crear la Static Web App con la región `East US 2`, Azure rechazó el despliegue. Se resolvió cambiando la región a `West US 2`.
 
 **Desafío 2 — Límite de archivos en GitHub:**  
-La carpeta compilada superó el límite de 100 archivos de la interfaz web. Se resolvió usando GitHub Desktop.
+La carpeta compilada superó el límite de 100 archivos. Se resolvió usando GitHub Desktop.
 
-**Desafío 3 — Google Fonts, PokéAPI GraphQL e imágenes bloqueadas por CSP:**  
-Múltiples recursos externos estaban bloqueados. Se identificaron mediante F12 y se agregaron al CSP.
+**Desafío 3 — Recursos externos bloqueados por CSP:**  
+Google Fonts, PokéAPI GraphQL e imágenes bloqueadas. Se identificaron mediante F12 y se agregaron al CSP.
 
 **Desafío 4 — Error HTTP 500 al intentar A+:**  
 Al eliminar `unsafe-inline` la app dejó de funcionar. Angular requiere esta directiva.
 
-**Desafío 5 — Imágenes de sprites no cargaban (navigationFallback):**  
-Los sprites locales de las tarjetas daban 404 porque el `navigationFallback` redirigía todas las peticiones a `index.html`, incluyendo las imágenes. Se resolvió agregando las extensiones de archivos estáticos en el campo `exclude` del `navigationFallback`.
+**Desafío 5 — Sprites no cargaban (navigationFallback):**  
+El `navigationFallback` redirigía todas las peticiones a `index.html` incluyendo imágenes. Se resolvió agregando extensiones de archivos en el campo `exclude`.
 
 **Desafío 6 — Carpeta pokedex-angular/assets/images/ faltante:**  
-La app buscaba los sprites en `/pokedex-angular/assets/images/` pero esa carpeta no existía en el repo. Se creó manualmente y se subió via GitHub Desktop.
+La app buscaba sprites en `/pokedex-angular/assets/images/` pero esa carpeta no existía. Se creó manualmente y se subió via GitHub Desktop.
 
 ---
 

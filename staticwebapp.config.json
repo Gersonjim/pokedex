@@ -2,7 +2,7 @@
   "routes": [
     {
       "route": "/pokedex-angular/assets/*",
-      "rewrite": "/assets/{wildcard}"
+      "rewrite": "/pokedex-angular/assets/{wildcard}"
     }
   ],
   "globalHeaders": {
@@ -15,6 +15,16 @@
   },
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/assets/*", "/pokedex-angular/*", "*.png", "*.gif", "*.jpg", "*.svg", "*.ico"]
+    "exclude": [
+      "/pokedex-angular/assets/*",
+      "/assets/*",
+      "/*.png",
+      "/*.gif",
+      "/*.jpg",
+      "/*.svg",
+      "/*.ico",
+      "/*.woff",
+      "/*.woff2"
+    ]
   }
 }
